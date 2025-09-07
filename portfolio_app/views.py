@@ -45,7 +45,7 @@ def download_cv(request):
     filepath = finders.find("portfolio_app/files/Akila_Resume.pdf")
     if not filepath:
         raise Http404("CV not found.")
-    return FileResponse(open(filepath, "rb"), as_attachment=True, filename="Muppudathi_CV.pdf")
+    return FileResponse(open(filepath, "rb"), as_attachment=True, filename="Akila_Resume.pdf")
 
 
 def success_page(request):
