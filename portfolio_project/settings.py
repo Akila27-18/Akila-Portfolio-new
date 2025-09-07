@@ -136,6 +136,6 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "muppuraj11@gmail.com"
-EMAIL_HOST_PASSWORD = "drwl hnmc ebsp iynj"  # Use Gmail App Password
+EMAIL_HOST_PASSWORD = "jqkb jgvi iobd hwrb"  # Use Gmail App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
