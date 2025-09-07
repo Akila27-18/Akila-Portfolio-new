@@ -1,0 +1,24 @@
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Django static files except images you want
+staticfiles/
+portfolio_app/static/portfolio_app/files/
+
+# Local environment files
+.env
+
+# VSCode settings (optional)
+.vscode/
+
+# Database files
+db.sqlite3
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Unwanted submodule folder
+R_muppudathi/
