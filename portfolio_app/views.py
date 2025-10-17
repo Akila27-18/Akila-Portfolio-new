@@ -57,9 +57,12 @@ def contact_submit(request):
                 )
 
             except Exception as e:
-                print("Error sending email:", e)
-                messages.error(request, "There was an error sending your message. Please try again later.")
+                import traceback
+                print("Email error:", e)
+                print(traceback.format_exc())
+                messages.error(request, "Email failed. Check logs.")
                 return render(request, 'portfolio_app/index.html', {'form': form})
+
 
             # Redirect to success page
             return redirect(f'/success/?name={name}')
@@ -97,12 +100,4 @@ def download_cv(request):
     else:
         raise Http404("CV not found")
     
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
 
-def download_certificate(request, cert_id):
-    certificate = get_object_or_404(Certificate, id=cert_id)
-    # Logic to return the certificate as a file
-    response = HttpResponse(certificate.file, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{certificate.name}.pdf"'
-    return response
