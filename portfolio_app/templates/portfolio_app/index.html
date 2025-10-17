@@ -477,7 +477,7 @@ a { text-decoration: none; color: inherit; }
         <div class="tab-contents" id="education-tab">
             <ul>
                 <li><span>B.E</span> in Electronics and Communication Engineering (ECE)</li>
-                <li>7.2 CGPA</li>
+                <li>Bachelor’s Degree – First Class</li>
                 <li>Shirdi Sai Engineering College, Bangalore</li>
                 <li><span>Technical Training</span> 
                   <li>Python Full Stack Developer Training at Vetri Technology Solutions.</li>
@@ -485,7 +485,13 @@ a { text-decoration: none; color: inherit; }
                   <li>Gained hands-on experience through real-world projects and collaborative coding sessions.</li>
                     <li>Built web apps using JS, Python, MySQL, integrated APIs, and designed dashboards.</li>
             </ul>
-          
+                <div class="certificate-download">
+        <h3>Python Full Stack Development Certificate</h3>
+        <form action="{% url 'portfolio_app:download_certificate' %}" method="get">
+          <button type="submit" class="btn btn-danger">Download Certificate</button>
+        </form>
+      </div>
+
         </div>
          
     </div>
@@ -530,17 +536,23 @@ a { text-decoration: none; color: inherit; }
         </a>
         <br>
         <form action="{% url 'portfolio_app:download_cv' %}" method="get">
-    <button type="submit" class="btn btn-danger">Download CV</button>
-</form>
-
+          <button type="submit" class="btn btn-danger">Download CV</button>
+        </form>
       </div>
     </div>
 
     <!-- RIGHT SIDE -->
     <div class="contact-right">
       <h2 class="form-title">Send Me a Message</h2>
+
+      <!-- Contact form -->
       <form id="contactForm" method="post" action="{% url 'portfolio_app:contact_submit' %}" novalidate>
         {% csrf_token %}
+        {% if messages %}
+          {% for message in messages %}
+            <p class="alert {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+          {% endfor %}
+        {% endif %}
 
         <div class="form-group">
           {{ form.name }}
@@ -561,6 +573,7 @@ a { text-decoration: none; color: inherit; }
 
   </div>
 </section>
+
 
 {% endblock %}
 

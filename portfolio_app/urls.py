@@ -8,4 +8,6 @@ urlpatterns = [
     path('contact-submit/', views.contact_submit, name='contact_submit'),
     path('success/', views.success_page, name='success_page'),
     path('download-cv/', views.download_cv, name='download_cv'),
+    path('download_certificate/', views.download_certificate, name='download_certificate'),
+
 ]
