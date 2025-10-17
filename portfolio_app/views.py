@@ -5,6 +5,8 @@ from django.http import FileResponse, Http404
 import os
 from .forms import ContactForm
 from django.contrib import messages
+from django.urls import reverse
+from django.shortcuts import redirect
 
 # -----------------------------
 # Home / Index Page
@@ -20,58 +22,56 @@ def index(request):
         'education_list': education_list
     })
 
-# -----------------------------
-# Contact Form Submission
-# -----------------------------
+from django.urls import reverse
+import logging
+
+logger = logging.getLogger(__name__)
+
 def contact_submit(request):
-    if request.method == "POST":
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            message = form.cleaned_data['message']
+    if request.method != "POST":
+        return redirect('index')
 
-            try:
-                # Email to site owner
-                send_mail(
-                    subject=f"Portfolio Contact Form - {name}",
-                    message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=['akila271819@gmail.com'],
-                    fail_silently=False,
-                )
+    form = ContactForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'portfolio_app/index.html', {'form': form})
 
-                # Thank-you email to sender
-                send_mail(
-                    subject="Thank you for contacting Akila",
-                    message=(
-                        f"Dear {name},\n\n"
-                        "Thank you for reaching out. I have received your message and will review it promptly. "
-                        "You can expect a reply shortly.\n\n"
-                        "Yours sincerely,\n"
-                        "Akila"
-                    ),
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[email],
-                    fail_silently=False,
-                )
+    name = form.cleaned_data['name'].strip()
+    email = form.cleaned_data['email'].strip()
+    message = form.cleaned_data['message'].strip()
 
-            except Exception as e:
-                import traceback
-                print("Email error:", e)
-                print(traceback.format_exc())
-                messages.error(request, "Email failed. Check logs.")
-                return render(request, 'portfolio_app/index.html', {'form': form})
+    try:
+        # Email to site owner
+        send_mail(
+            subject=f"Portfolio Contact Form - {name}",
+            message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=['akila271819@gmail.com'],
+            fail_silently=False,
+        )
 
+        # Thank-you email to sender
+        send_mail(
+            subject="Thank you for contacting Akila",
+            message=(
+                f"Dear {name},\n\n"
+                "Thank you for reaching out. I have received your message and will review it promptly. "
+                "You can expect a reply shortly.\n\n"
+                "Yours sincerely,\n"
+                "Akila"
+            ),
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            fail_silently=False,
+        )
 
-            # Redirect to success page
-            return redirect(f'/success/?name={name}')
-        else:
-            # Form invalid, redisplay with errors
-            return render(request, 'portfolio_app/index.html', {'form': form})
+    except Exception as e:
+        logger.exception("Failed to send contact emails")
+        messages.error(request, "Email failed to send. Please try again later.")
+        return render(request, 'portfolio_app/index.html', {'form': form})
 
-    # If not POST, redirect to index
-    return redirect('index')
+    # Success page
+    return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
+
 
 
 # -----------------------------

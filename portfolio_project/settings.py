@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-6$@$7g%np)_i_kur&7k4#i^gur=s8^^5jmg(bs%(2b%145i^@=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', 
+                '127.0.0.1',
+                'https://akila-portfolio-new-1.onrender.com']
 
 
 # Application definition
