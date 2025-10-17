@@ -97,17 +97,12 @@ def download_cv(request):
     else:
         raise Http404("CV not found")
     
-def download_certificate(request):
-    file_path = os.path.join(
-        settings.BASE_DIR,
-        'portfolio_app',
-        'static',
-        'portfolio_app',
-        'files',
-        'python_Fullstack_Certificate.pdf'
-    )
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
 
-    if os.path.exists(file_path):
-        return FileResponse(open(file_path, 'rb'), as_attachment=True, filename='python_Fullstack_Certificate.pdf')
-    else:
-        raise Http404("Certificate not found")
+def download_certificate(request, cert_id):
+    certificate = get_object_or_404(Certificate, id=cert_id)
+    # Logic to return the certificate as a file
+    response = HttpResponse(certificate.file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{certificate.name}.pdf"'
+    return response
