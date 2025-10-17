@@ -1,0 +1,64 @@
+{% extends "portfolio_app/base.html" %}
+
+{% block title %}Message Sent - Akila Portfolio{% endblock %}
+
+{% block extra_css %}
+<style>
+.success-container {
+    text-align: center;
+    padding: 80px 20px;
+    color: white;
+    background-color: #080808;
+    min-height: 60vh;
+}
+
+.success-container h1 {
+    color: #28a745;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    animation: fadeInDown 1s ease-in-out;
+}
+
+.success-container p {
+    font-size: 1.2rem;
+    margin-top: 20px;
+    color: #ccc;
+    animation: fadeInUp 1s ease-in-out;
+}
+
+.success-container a.btn {
+    margin-top: 30px;
+    padding: 12px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.3s, transform 0.3s;
+}
+
+.success-container a.btn:hover {
+    background-color: #ff004f;
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <h1>Thank You, {{ name }}!</h1>
+    <p>Your message has been successfully sent. I will review it and respond promptly.</p>
+    <a href="{% url 'portfolio_app:index' %}">Return to Home</a>
+
+</div>
+{% endblock %}

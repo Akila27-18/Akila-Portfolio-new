@@ -1,18 +1,20 @@
-
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.conf import settings
 from .forms import ContactForm
-import os
-from django.http import FileResponse
 from django.http import FileResponse, Http404
-from django.contrib.staticfiles import finders
+import os
 
 def index(request):
-    return render(request, 'portfolio_app/index.html')
+    form = ContactForm()
+    # Sample education list
+    education_list = [
+        {'degree': 'B.Sc Computer Science', 'institution': 'University Name', 'year': '2019-2023'},
+        {'degree': 'High School Diploma', 'institution': 'School Name', 'year': '2017-2019'}
+    ]
+    return render(request, 'portfolio_app/index.html', {'form': form, 'education_list': education_list})
 
-def index(request):
-    success = False
+def contact_submit(request):
     if request.method == "POST":
         form = ContactForm(request.POST)
         if form.is_valid():
@@ -20,34 +22,46 @@ def index(request):
             email = form.cleaned_data['email']
             message = form.cleaned_data['message']
 
-            # Send email
+            # 1️⃣ Email to yourself
             send_mail(
                 subject=f"Portfolio Contact Form - {name}",
-                message=message,
+                message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=['akila271819@gmail.com'],  # change to your email
+                recipient_list=['akila271819@gmail.com'],
                 fail_silently=False,
             )
-            success = True
-    else:
-        form = ContactForm()
 
-    return render(request, 'portfolio_app/index.html', {'form': form, 'success': success})
+            # 2️⃣ Thank-you email to sender
+            send_mail(
+                subject="Thank you for contacting Akila",
+                message=(
+                    f"Dear {name},\n\n"
+                    "Thank you for reaching out. I have received your message and will review it promptly. "
+                    "You can expect a reply shortly.\n\n"
+                    "Yours sincerely,\n"
+                    "Akila"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+                fail_silently=False,
+            )
 
-
-
-
-# ✅ CV Download View
-# def download_cv(request):
-#     filepath = os.path.join(settings.BASE_DIR, "static/portfolio_app/files/Muppudathi_CV.pdf")
-#     return FileResponse(open(filepath, "rb"), as_attachment=True, filename="Muppudathi_CV.pdf")
-def download_cv(request):
-    filepath = finders.find("portfolio_app/files/Akila_Resume.pdf")
-    if not filepath:
-        raise Http404("CV not found.")
-    return FileResponse(open(filepath, "rb"), as_attachment=True, filename="Akila_Resume.pdf")
-
+            return redirect(f'/success/?name={name}')
+    return redirect('index')
 
 def success_page(request):
     name = request.GET.get('name', 'User')
     return render(request, "portfolio_app/success.html", {"name": name})
+
+    name = request.GET.get('name', 'User')
+    return render(request, "portfolio_app/success.html", {"name": name})
+
+# CV download
+
+def download_cv(request):
+    file_path = os.path.join(settings.BASE_DIR, 'portfolio_app', 'static', 'portfolio_app', 'files', 'Akila_Resume.pdf')
+    
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'), as_attachment=True, filename='Akila_Resume.pdf')
+    else:
+        raise Http404("CV not found")
