@@ -49,20 +49,20 @@ def contact_submit(request):
             fail_silently=False,
         )
 
-        # Thank-you email to sender
-        send_mail(
-            subject="Thank you for contacting Akila",
-            message=(
-                f"Dear {name},\n\n"
-                "Thank you for reaching out. I have received your message and will review it promptly. "
-                "You can expect a reply shortly.\n\n"
-                "Yours sincerely,\n"
-                "Akila"
-            ),
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        # # Thank-you email to sender
+        # send_mail(
+        #     subject="Thank you for contacting Akila",
+        #     message=(
+        #         f"Dear {name},\n\n"
+        #         "Thank you for reaching out. I have received your message and will review it promptly. "
+        #         "You can expect a reply shortly.\n\n"
+        #         "Yours sincerely,\n"
+        #         "Akila"
+        #     ),
+        #     from_email=settings.EMAIL_HOST_USER,
+        #     recipient_list=[email],
+        #     fail_silently=False,
+        # )
 
     except Exception as e:
         logger.exception("Failed to send contact emails")
