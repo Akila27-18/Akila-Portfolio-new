@@ -569,29 +569,44 @@ a {
       <h2 class="form-title">Send Me a Message</h2>
 
       <!-- Contact form -->
-      <form id="contactForm" method="post" action="{% url 'portfolio_app:contact_submit' %}" novalidate>
-        {% csrf_token %}
-        {% if messages %}
-          {% for message in messages %}
-            <p class="alert {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
-          {% endfor %}
-        {% endif %}
+      <form id="contactForm" method="post" action="{% url 'portfolio_app:contact_submit' %}">
+    {% csrf_token %}
+    {% if messages %}
+      {% for message in messages %}
+        <p class="alert {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
 
-        <div class="form-group">
-          {{ form.name }}
-          <small class="error" id="nameError"></small>
-        </div>
-        <div class="form-group">
-          {{ form.email }}
-          <small class="error" id="emailError"></small>
-        </div>
-        <div class="form-group">
-          {{ form.message }}
-          <small class="error" id="messageError"></small>
-        </div>
+    <div class="form-group">
+      {{ form.name }}
+      {% if form.name.errors %}
+        {% for error in form.name.errors %}
+          <small class="error">{{ error }}</small>
+        {% endfor %}
+      {% endif %}
+    </div>
 
-        <button type="submit" class="btn-submit">Send Message</button>
-      </form>
+    <div class="form-group">
+      {{ form.email }}
+      {% if form.email.errors %}
+        {% for error in form.email.errors %}
+          <small class="error">{{ error }}</small>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      {{ form.message }}
+      {% if form.message.errors %}
+        {% for error in form.message.errors %}
+          <small class="error">{{ error }}</small>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn-submit">Send Message</button>
+</form>
+
     </div>
 
   </div>

@@ -20,9 +20,16 @@ def index(request):
         {'degree': 'B.Sc Computer Science', 'institution': 'University Name', 'year': '2019-2023'},
         {'degree': 'High School Diploma', 'institution': 'School Name', 'year': '2017-2019'}
     ]
+
+    # Optional: Get success message from query parameters
+    success = request.GET.get('success')
+    name = request.GET.get('name', '')
+
     return render(request, 'portfolio_app/index.html', {
         'form': form,
-        'education_list': education_list
+        'education_list': education_list,
+        'success': success,
+        'name': name,
     })
 
 
@@ -31,10 +38,11 @@ def index(request):
 # -----------------------------
 def contact_submit(request):
     if request.method != "POST":
-        return redirect('index')
+        return redirect(reverse('portfolio_app:index'))
 
     form = ContactForm(request.POST)
     if not form.is_valid():
+        # Stay on the form page and display validation errors
         return render(request, 'portfolio_app/index.html', {'form': form})
 
     name = form.cleaned_data['name'].strip()
@@ -52,10 +60,14 @@ def contact_submit(request):
         )
     except BadHeaderError:
         logger.error("Invalid header found while sending email to site owner.")
+        messages.error(request, "There was an error sending your message. Please try again.")
+        return render(request, 'portfolio_app/index.html', {'form': form})
     except Exception as e:
         logger.exception("Failed to send email to site owner: %s", e)
+        messages.error(request, "Failed to send your message. Please try again later.")
+        return render(request, 'portfolio_app/index.html', {'form': form})
 
-    # --- Thank-you email to sender (optional) ---
+    # --- Optional: Thank-you email to sender ---
     try:
         send_mail(
             subject="Thanks for reaching out!",
@@ -63,23 +75,24 @@ def contact_submit(request):
                 f"Hi {name},\n\n"
                 "Thanks for contacting me. I’ve received your message:\n\n"
                 f"{message}\n\n"
-                "I’ll reply as soon as possible.\n\n"
-                "- Akila"
+                "I will review and reply to this mail promptly.\n\n"
+                "- Akila C"
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
-            fail_silently=True,  # Never crash if user email fails
+            fail_silently=True,  # Don't crash if user email fails
         )
     except Exception as e:
-        logger.exception("Failed to send thank-you email to sender: %s", e)
+        logger.exception("Failed to send thank-you email to %s <%s>: %s", name, email, e)
 
-    # Always redirect to success page, even if emails fail
-    messages.success(request, "Thank you for your message! I will get back to you soon.")
+    # Success: redirect back to the form page with success message
+   # After successful email sending
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
 
 
+
 # -----------------------------
-# Success Page
+# Success Page (optional)
 # -----------------------------
 def success_page(request):
     name = request.GET.get('name', 'User')
@@ -100,6 +113,7 @@ def download_cv(request):
     )
 
     if os.path.exists(file_path):
+        # Open without 'with' so FileResponse can stream the file
         return FileResponse(open(file_path, 'rb'), as_attachment=True, filename='Akila_Resume.pdf')
     else:
         raise Http404("CV not found")

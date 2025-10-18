@@ -15,11 +15,16 @@ class ContactForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'Your Name', 'class': 'form-control'}),
         error_messages={'required': 'Please enter your name.'}
     )
+
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={'placeholder': 'Your Email', 'class': 'form-control'}),
-        error_messages={'required': 'Please enter a valid email address.'}
+        error_messages={
+            'required': 'Please enter your email address.',
+            'invalid': 'Please enter a valid email address.'
+        }
     )
+
     message = forms.CharField(
         required=True,
         widget=forms.Textarea(attrs={'placeholder': 'Your Message', 'class': 'form-control', 'rows': 4}),
