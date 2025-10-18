@@ -1,12 +1,15 @@
+import os
+import logging
 from django.shortcuts import render, redirect
-from django.core.mail import send_mail
+from django.core.mail import send_mail, BadHeaderError
 from django.conf import settings
 from django.http import FileResponse, Http404
-import os
-from .forms import ContactForm
-from django.contrib import messages
 from django.urls import reverse
-from django.shortcuts import redirect
+from django.contrib import messages
+from .forms import ContactForm
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # -----------------------------
 # Home / Index Page
@@ -22,11 +25,10 @@ def index(request):
         'education_list': education_list
     })
 
-from django.urls import reverse
-import logging
 
-logger = logging.getLogger(__name__)
-
+# -----------------------------
+# Contact Form Submission
+# -----------------------------
 def contact_submit(request):
     if request.method != "POST":
         return redirect('index')
@@ -39,39 +41,41 @@ def contact_submit(request):
     email = form.cleaned_data['email'].strip()
     message = form.cleaned_data['message'].strip()
 
+    # --- Email to site owner ---
     try:
-        # Email to site owner
         send_mail(
             subject=f"Portfolio Contact Form - {name}",
             message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=['akila271819@gmail.com'],
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.EMAIL_HOST_USER],
             fail_silently=False,
         )
-
-        # # Thank-you email to sender
-        # send_mail(
-        #     subject="Thank you for contacting Akila",
-        #     message=(
-        #         f"Dear {name},\n\n"
-        #         "Thank you for reaching out. I have received your message and will review it promptly. "
-        #         "You can expect a reply shortly.\n\n"
-        #         "Yours sincerely,\n"
-        #         "Akila"
-        #     ),
-        #     from_email=settings.EMAIL_HOST_USER,
-        #     recipient_list=[email],
-        #     fail_silently=False,
-        # )
-
+    except BadHeaderError:
+        logger.error("Invalid header found while sending email to site owner.")
     except Exception as e:
-        logger.exception("Failed to send contact emails")
-        messages.error(request, "Email failed to send. Please try again later.")
-        return render(request, 'portfolio_app/index.html', {'form': form})
+        logger.exception("Failed to send email to site owner: %s", e)
 
-    # Success page
+    # --- Thank-you email to sender (optional) ---
+    try:
+        send_mail(
+            subject="Thanks for reaching out!",
+            message=(
+                f"Hi {name},\n\n"
+                "Thanks for contacting me. I’ve received your message:\n\n"
+                f"{message}\n\n"
+                "I’ll reply as soon as possible.\n\n"
+                "- Akila"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=True,  # Never crash if user email fails
+        )
+    except Exception as e:
+        logger.exception("Failed to send thank-you email to sender: %s", e)
+
+    # Always redirect to success page, even if emails fail
+    messages.success(request, "Thank you for your message! I will get back to you soon.")
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
-
 
 
 # -----------------------------
@@ -99,5 +103,3 @@ def download_cv(request):
         return FileResponse(open(file_path, 'rb'), as_attachment=True, filename='Akila_Resume.pdf')
     else:
         raise Http404("CV not found")
-    
-
