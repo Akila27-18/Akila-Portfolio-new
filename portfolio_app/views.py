@@ -49,25 +49,40 @@ def contact_submit(request):
     message = form.cleaned_data['message'].strip()
 
     # --- Email to site owner ---
+    subject = f"Portfolio Contact Form - {name}"
+    body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [settings.EMAIL_HOST_USER]
+
     try:
         send_mail(
-            subject=f"Portfolio Contact Form - {name}",
-            message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.EMAIL_HOST_USER],
-            fail_silently=False,  # Raise errors so we can log them
+            subject=subject,
+            message=body,
+            from_email=from_email,
+            recipient_list=recipient_list,
+            fail_silently=False,  # Raise exceptions to catch them
         )
+        logger.info("Contact form email sent successfully to %s", recipient_list)
     except BadHeaderError:
-        logger.error("Invalid email header.")
+        logger.error("Invalid email header detected in form from %s <%s>", name, email)
         messages.error(request, "Invalid header detected.")
         return render(request, 'portfolio_app/index.html', {'form': form})
     except Exception as e:
-        logger.exception("Failed to send email to site owner: %s", e)
-        messages.error(request, "Failed to send your message. Please try again later.")
+        # Detailed logging for SMTP errors
+        logger.exception(
+            "Failed to send contact form email from %s <%s>. "
+            "Check EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, and Gmail SMTP access. Error: %s",
+            name, email, e
+        )
+        messages.error(
+            request,
+            "Failed to send your message. Please check your email configuration or try later."
+        )
         return render(request, 'portfolio_app/index.html', {'form': form})
 
     # --- Redirect to success page ---
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
+
 
 
 # -----------------------------
