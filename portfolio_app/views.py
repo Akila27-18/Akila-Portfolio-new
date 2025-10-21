@@ -31,6 +31,7 @@ def index(request):
         'name': name,
     })
 
+
 # -----------------------------
 # Contact Form Submission
 # -----------------------------
@@ -40,14 +41,12 @@ def contact_submit(request):
 
     form = ContactForm(request.POST)
     if not form.is_valid():
+        # Form errors will be rendered in index.html
         return render(request, 'portfolio_app/index.html', {'form': form})
 
     name = form.cleaned_data['name'].strip()
     email = form.cleaned_data['email'].strip()
     message = form.cleaned_data['message'].strip()
-
-    # Determine if email backend is SMTP (local dev) or something else (Render)
-    is_smtp = settings.EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend'
 
     # --- Email to site owner ---
     try:
@@ -56,35 +55,16 @@ def contact_submit(request):
             message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.EMAIL_HOST_USER],
-            fail_silently=not is_smtp,  # only raise errors locally
+            fail_silently=False,  # Raise errors so we can log them
         )
+    except BadHeaderError:
+        logger.error("Invalid email header.")
+        messages.error(request, "Invalid header detected.")
+        return render(request, 'portfolio_app/index.html', {'form': form})
     except Exception as e:
-        logger.warning("Email sending failed: %s", e)
-        if is_smtp:
-            messages.error(request, "Failed to send your message. Please try again later.")
-            return render(request, 'portfolio_app/index.html', {'form': form})
-        else:
-            # On Render, just log it and continue
-            messages.info(request, "Message received. Email sending is disabled on this host.")
-
-    # --- Thank-you email to sender (optional) ---
-    if email:
-        try:
-            send_mail(
-                subject="Thanks for reaching out!",
-                message=(
-                    f"Hi {name},\n\n"
-                    "Thanks for contacting me. I’ve received your message:\n\n"
-                    f"{message}\n\n"
-                    "I will review and reply promptly.\n\n"
-                    "- Akila C"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=True,  # never fail hard for thank-you email
-            )
-        except Exception as e:
-            logger.warning("Thank-you email failed: %s", e)
+        logger.exception("Failed to send email to site owner: %s", e)
+        messages.error(request, "Failed to send your message. Please try again later.")
+        return render(request, 'portfolio_app/index.html', {'form': form})
 
     # --- Redirect to success page ---
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
@@ -96,6 +76,7 @@ def contact_submit(request):
 def success_page(request):
     name = request.GET.get('name', 'User')
     return render(request, "portfolio_app/success.html", {"name": name})
+
 
 # -----------------------------
 # CV Download

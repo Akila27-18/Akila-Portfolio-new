@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv  # optional for local development
 
-# Load .env if present (local testing)
+# Load .env if present
 load_dotenv()
 
 # -----------------------------
@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-secret-key-for-dev')
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']  # For Render or dev simplicity; replace with domains in production
 
 # -----------------------------
 # Applications
@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # should be right after security
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Right after security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -46,7 +46,7 @@ ROOT_URLCONF = 'portfolio_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # add custom template dirs if needed
+        'DIRS': [],  # Add custom template dirs if needed
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -100,7 +100,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # -----------------------------
-# Email
+# Email (Gmail SMTP)
 # -----------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
