@@ -53,7 +53,7 @@ def contact_submit(request):
             message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.EMAIL_HOST_USER],
-            fail_silently=False,
+            fail_silently=True,
         )
     except BadHeaderError:
         logger.error("Invalid email header.")
