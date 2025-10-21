@@ -1,28 +1,25 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv  # optional but useful for local testing
+from dotenv import load_dotenv  # optional for local development
 
-# Load .env file if running locally
+# Load .env if present (local testing)
 load_dotenv()
 
-# Build paths inside the project
+# -----------------------------
+# Paths
+# -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# -------------------------------------------------
-# SECURITY SETTINGS
-# -------------------------------------------------
+# -----------------------------
+# Security
+# -----------------------------
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-secret-key-for-dev')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'akila-portfolio-new-1.onrender.com',
-]
-
-# -------------------------------------------------
-# APPLICATIONS
-# -------------------------------------------------
+# -----------------------------
+# Applications
+# -----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,7 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # should come right after SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # should be right after security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -49,7 +46,7 @@ ROOT_URLCONF = 'portfolio_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # can add custom templates folder if needed
+        'DIRS': [],  # add custom template dirs if needed
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -63,9 +60,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'portfolio_project.wsgi.application'
 
-# -------------------------------------------------
-# DATABASE
-# -------------------------------------------------
+# -----------------------------
+# Database (SQLite for simplicity)
+# -----------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -73,9 +70,9 @@ DATABASES = {
     }
 }
 
-# -------------------------------------------------
-# PASSWORD VALIDATION
-# -------------------------------------------------
+# -----------------------------
+# Password validation
+# -----------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -83,17 +80,17 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# -------------------------------------------------
-# INTERNATIONALIZATION
-# -------------------------------------------------
+# -----------------------------
+# Internationalization
+# -----------------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
-# -------------------------------------------------
-# STATIC & MEDIA
-# -------------------------------------------------
+# -----------------------------
+# Static & Media
+# -----------------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "portfolio_app" / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -102,20 +99,19 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# -------------------------------------------------
-# EMAIL SETTINGS
-# -------------------------------------------------
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
+# -----------------------------
+# Email
+# -----------------------------
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# ✅ Store credentials in environment variables on Render
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# -------------------------------------------------
-# DEFAULTS
-# -------------------------------------------------
+# -----------------------------
+# Defaults
+# -----------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
