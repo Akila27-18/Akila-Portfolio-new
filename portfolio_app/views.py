@@ -46,6 +46,9 @@ def contact_submit(request):
     email = form.cleaned_data['email'].strip()
     message = form.cleaned_data['message'].strip()
 
+    # Determine if email backend is SMTP (local dev) or something else (Render)
+    is_smtp = settings.EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend'
+
     # --- Email to site owner ---
     try:
         send_mail(
@@ -53,16 +56,16 @@ def contact_submit(request):
             message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.EMAIL_HOST_USER],
-            fail_silently=True,
+            fail_silently=not is_smtp,  # only raise errors locally
         )
-    except BadHeaderError:
-        logger.error("Invalid email header.")
-        messages.error(request, "Invalid header detected.")
-        return render(request, 'portfolio_app/index.html', {'form': form})
     except Exception as e:
-        logger.exception("Failed to send email to site owner: %s", e)
-        messages.error(request, "Failed to send your message. Please try again later.")
-        return render(request, 'portfolio_app/index.html', {'form': form})
+        logger.warning("Email sending failed: %s", e)
+        if is_smtp:
+            messages.error(request, "Failed to send your message. Please try again later.")
+            return render(request, 'portfolio_app/index.html', {'form': form})
+        else:
+            # On Render, just log it and continue
+            messages.info(request, "Message received. Email sending is disabled on this host.")
 
     # --- Thank-you email to sender (optional) ---
     if email:
@@ -78,13 +81,14 @@ def contact_submit(request):
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
-                fail_silently=True,
+                fail_silently=True,  # never fail hard for thank-you email
             )
         except Exception as e:
-            logger.exception("Failed to send thank-you email to %s <%s>: %s", name, email, e)
+            logger.warning("Thank-you email failed: %s", e)
 
     # --- Redirect to success page ---
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
+
 
 # -----------------------------
 # Success Page
