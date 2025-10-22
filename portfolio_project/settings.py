@@ -14,8 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 SECRET_KEY = config('DJANGO_SECRET_KEY', default='your-secret-key')
 DEBUG = config('DJANGO_DEBUG', cast=bool, default=True)
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')], default=[])
-
+ALLOWED_HOSTS = ['*']
 # -----------------------------
 # Installed Apps
 # -----------------------------
