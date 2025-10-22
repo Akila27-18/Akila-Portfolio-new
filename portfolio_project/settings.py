@@ -1,3 +1,9 @@
+"""
+Django settings for portfolio_project.
+
+Production-ready and Render-compatible version.
+"""
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv  # optional for local development
@@ -15,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-secret-key-for-dev')
 DEBUG = True
-ALLOWED_HOSTS = ['*']  # For Render or dev simplicity; replace with domains in production
+ALLOWED_HOSTS = ['*']  # Replace with actual domains in production
 
 # -----------------------------
 # Applications
@@ -32,7 +38,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Right after security
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static file serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -46,7 +52,7 @@ ROOT_URLCONF = 'portfolio_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Add custom template dirs if needed
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -98,11 +104,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 # -----------------------------
 # Email Configuration (Gmail + fallback)
 # -----------------------------
-import os
-
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
 )
@@ -120,7 +125,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 if EMAIL_BACKEND == "django.core.mail.backends.console.EmailBackend":
     import logging
     logging.warning("Email backend set to console. Emails will be printed to logs instead of sending.")
-
 
 # -----------------------------
 # Defaults
