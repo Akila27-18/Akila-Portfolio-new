@@ -1,18 +1,24 @@
+# portfolio_project/settings.py
+
 import os
 from pathlib import Path
+from decouple import config
 
-# BASE_DIR points to the project root
+# -----------------------------
+# Base Directory
+# -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'your-secret-key-here'
+# -----------------------------
+# Security
+# -----------------------------
+SECRET_KEY = config('DJANGO_SECRET_KEY', default='your-secret-key')
+DEBUG = config('DJANGO_DEBUG', cast=bool, default=True)
+ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')], default=[])
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
-# Application definition
+# -----------------------------
+# Installed Apps
+# -----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -20,9 +26,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'portfolio_app',  # your app
+    'portfolio_app',
 ]
 
+# -----------------------------
+# Middleware
+# -----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -33,12 +42,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# -----------------------------
+# URL Configuration
+# -----------------------------
 ROOT_URLCONF = 'portfolio_project.urls'
 
+# -----------------------------
+# Templates
+# -----------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # your templates folder
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -51,10 +66,14 @@ TEMPLATES = [
     },
 ]
 
+# -----------------------------
+# WSGI
+# -----------------------------
 WSGI_APPLICATION = 'portfolio_project.wsgi.application'
 
-# Database
-# Use SQLite for development
+# -----------------------------
+# Database (default SQLite for dev)
+# -----------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -62,45 +81,36 @@ DATABASES = {
     }
 }
 
-# Password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-# Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Kolkata'
-USE_I18N = True
-USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
+# -----------------------------
+# Static & Media
+# -----------------------------
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']  # where Django looks for static files
-STATIC_ROOT = BASE_DIR / 'staticfiles'    # for collectstatic in production
+STATICFILES_DIRS = [BASE_DIR / "static"]  # Ensure this folder exists
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
 
-# =======================
-# Email Configuration
-# =======================
+# -----------------------------
+# Email Settings (Gmail)
+# -----------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'akila271819@gmail.com'  # your Gmail address
-EMAIL_HOST_PASSWORD = 'cmmwdsolybtaghsb'  # use an App Password from Gmail
-
-# Optional: default from email
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', cast=bool, default=False)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# -----------------------------
+# Messages
+# -----------------------------
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}
