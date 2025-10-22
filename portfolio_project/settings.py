@@ -133,10 +133,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "akila271819@gmail.com"
-EMAIL_HOST_PASSWORD = "jqkbjgviiobdhwrb"  # Use Gmail App Password
+import os
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')   # Your SMTP host
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))           # 587 for TLS, 465 for SSL
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'   # TLS = True, SSL = False
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False') == 'True'  # Only one of TLS/SSL should be True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')          # Your email address
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Your email password or App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
