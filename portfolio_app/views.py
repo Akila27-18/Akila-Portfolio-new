@@ -1,15 +1,42 @@
 import os
+import threading
 import logging
 from django.shortcuts import render, redirect
-from django.core.mail import send_mail, BadHeaderError
-from django.conf import settings
-from django.http import HttpResponse, Http404
 from django.urls import reverse
 from django.contrib import messages
+from django.http import HttpResponse, Http404
+from django.core.mail import send_mail, BadHeaderError
+from django.conf import settings
 from .forms import ContactForm
 
 # Logger for debugging
 logger = logging.getLogger(__name__)
+
+# -----------------------------
+# Asynchronous Email Sender
+# -----------------------------
+def send_email_async(subject, message, from_email, recipient_list):
+    """
+    Sends email in a separate thread to avoid blocking requests.
+    Logs exceptions without crashing Gunicorn.
+    """
+    def _send():
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=from_email,
+                recipient_list=recipient_list,
+                fail_silently=False,
+            )
+            logger.info("Email sent successfully to %s", recipient_list)
+        except BadHeaderError:
+            logger.error("Invalid email header detected for email to %s", recipient_list)
+        except Exception as e:
+            logger.exception("Failed to send email to %s. Error: %s", recipient_list, e)
+
+    threading.Thread(target=_send, daemon=True).start()
+
 
 # -----------------------------
 # Home / Index Page
@@ -41,48 +68,25 @@ def contact_submit(request):
 
     form = ContactForm(request.POST)
     if not form.is_valid():
-        # Form errors will be rendered in index.html
         return render(request, 'portfolio_app/index.html', {'form': form})
 
     name = form.cleaned_data['name'].strip()
     email = form.cleaned_data['email'].strip()
     message = form.cleaned_data['message'].strip()
 
-    # --- Email to site owner ---
+    # Prepare email
     subject = f"Portfolio Contact Form - {name}"
     body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [settings.EMAIL_HOST_USER]
 
-    try:
-        send_mail(
-            subject=subject,
-            message=body,
-            from_email=from_email,
-            recipient_list=recipient_list,
-            fail_silently=False,  # Raise exceptions to catch them
-        )
-        logger.info("Contact form email sent successfully to %s", recipient_list)
-    except BadHeaderError:
-        logger.error("Invalid email header detected in form from %s <%s>", name, email)
-        messages.error(request, "Invalid header detected.")
-        return render(request, 'portfolio_app/index.html', {'form': form})
-    except Exception as e:
-        # Detailed logging for SMTP errors
-        logger.exception(
-            "Failed to send contact form email from %s <%s>. "
-            "Check EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, and Gmail SMTP access. Error: %s",
-            name, email, e
-        )
-        messages.error(
-            request,
-            "Failed to send your message. Please check your email configuration or try later."
-        )
-        return render(request, 'portfolio_app/index.html', {'form': form})
+    # Send email asynchronously
+    send_email_async(subject, body, from_email, recipient_list)
 
-    # --- Redirect to success page ---
+    # Inform user immediately
+    messages.success(request, "Your message has been submitted successfully!")
+
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
-
 
 
 # -----------------------------
