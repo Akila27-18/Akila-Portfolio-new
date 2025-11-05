@@ -59,9 +59,12 @@ def index(request):
     })
 
 
-# -----------------------------
-# Contact Form Submission
-# -----------------------------
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.conf import settings
+
 def contact_submit(request):
     if request.method != "POST":
         return redirect(reverse('portfolio_app:index'))
@@ -80,13 +83,15 @@ def contact_submit(request):
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [settings.EMAIL_HOST_USER]
 
-    # Send email asynchronously
-    send_email_async(subject, body, from_email, recipient_list)
-
-    # Inform user immediately
-    messages.success(request, "Your message has been submitted successfully!")
+    # Send email (synchronously)
+    try:
+        send_mail(subject, body, from_email, recipient_list)
+        messages.success(request, "Your message has been submitted successfully!")
+    except Exception as e:
+        messages.error(request, f"Something went wrong while sending the email: {e}")
 
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
+
 
 
 # -----------------------------
