@@ -50,31 +50,58 @@ def index(request):
 # -----------------------------
 # Contact Submit
 # -----------------------------
+# def contact_submit(request):
+#     if request.method != "POST":
+#         return redirect(reverse('portfolio_app:index'))
+
+#     form = ContactForm(request.POST)
+#     if not form.is_valid():
+#         return render(request, 'portfolio_app/index.html', {'form': form})
+
+#     name = form.cleaned_data['name'].strip()
+#     email = form.cleaned_data['email'].strip()
+#     message = form.cleaned_data['message'].strip()
+
+#     subject = f"Portfolio Contact Form - {name}"
+#     body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+#     from_email = settings.DEFAULT_FROM_EMAIL
+#     recipient_list = [settings.EMAIL_HOST_USER]
+
+#     try:
+#         send_email_async(subject, body, from_email, recipient_list)
+#         messages.success(request, "Your message has been submitted successfully!")
+#     except Exception as e:
+#         logger.exception("Error sending email: %s", e)
+#         messages.error(request, f"Something went wrong while sending the email: {e}")
+
+#     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
+
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.http import HttpResponse
+
 def contact_submit(request):
-    if request.method != "POST":
-        return redirect(reverse('portfolio_app:index'))
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        message = request.POST.get("message")
 
-    form = ContactForm(request.POST)
-    if not form.is_valid():
-        return render(request, 'portfolio_app/index.html', {'form': form})
+        try:
+            send_mail(
+                subject=f"New message from {name}",
+                message=f"From: {email}\n\n{message}",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=["your_email@example.com"],  # change this to your inbox
+                fail_silently=False,
+            )
+            return redirect(f"/success/?name={name}")
 
-    name = form.cleaned_data['name'].strip()
-    email = form.cleaned_data['email'].strip()
-    message = form.cleaned_data['message'].strip()
+        except Exception as e:
+            print("Email error:", e)  # will also print in terminal
+            return HttpResponse(f"Email error: {e}")  # 👈 shows actual error in browser
 
-    subject = f"Portfolio Contact Form - {name}"
-    body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
-    from_email = settings.DEFAULT_FROM_EMAIL
-    recipient_list = [settings.EMAIL_HOST_USER]
-
-    try:
-        send_email_async(subject, body, from_email, recipient_list)
-        messages.success(request, "Your message has been submitted successfully!")
-    except Exception as e:
-        logger.exception("Error sending email: %s", e)
-        messages.error(request, f"Something went wrong while sending the email: {e}")
-
-    return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
+    return render(request, "contact.html")
 
 # -----------------------------
 # Success Page
