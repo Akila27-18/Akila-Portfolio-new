@@ -103,3 +103,4 @@ def download_cv(request):
     except Exception as e:
         logger.exception("Failed to serve CV file: %s", e)
         raise Http404("CV cannot be downloaded at this time.")
+
