@@ -9,17 +9,13 @@ from django.core.mail import send_mail, BadHeaderError
 from django.conf import settings
 from .forms import ContactForm
 
-# Logger for debugging
 logger = logging.getLogger(__name__)
 
 # -----------------------------
 # Asynchronous Email Sender
 # -----------------------------
 def send_email_async(subject, message, from_email, recipient_list):
-    """
-    Sends email in a separate thread to avoid blocking requests.
-    Logs exceptions without crashing Gunicorn.
-    """
+    """Send email in a background thread to avoid blocking the response."""
     def _send():
         try:
             send_mail(
@@ -37,7 +33,6 @@ def send_email_async(subject, message, from_email, recipient_list):
 
     threading.Thread(target=_send, daemon=True).start()
 
-
 # -----------------------------
 # Home / Index Page
 # -----------------------------
@@ -47,24 +42,14 @@ def index(request):
         {'degree': 'B.Sc Computer Science', 'institution': 'University Name', 'year': '2019-2023'},
         {'degree': 'High School Diploma', 'institution': 'School Name', 'year': '2017-2019'}
     ]
-
-    success = request.GET.get('success')
-    name = request.GET.get('name', '')
-
     return render(request, 'portfolio_app/index.html', {
         'form': form,
         'education_list': education_list,
-        'success': success,
-        'name': name,
     })
 
-
-from django.core.mail import send_mail
-from django.contrib import messages
-from django.shortcuts import redirect, render
-from django.urls import reverse
-from django.conf import settings
-
+# -----------------------------
+# Contact Submit
+# -----------------------------
 def contact_submit(request):
     if request.method != "POST":
         return redirect(reverse('portfolio_app:index'))
@@ -77,22 +62,19 @@ def contact_submit(request):
     email = form.cleaned_data['email'].strip()
     message = form.cleaned_data['message'].strip()
 
-    # Prepare email
     subject = f"Portfolio Contact Form - {name}"
     body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [settings.EMAIL_HOST_USER]
 
-    # Send email (synchronously)
     try:
-        send_mail(subject, body, from_email, recipient_list)
+        send_email_async(subject, body, from_email, recipient_list)
         messages.success(request, "Your message has been submitted successfully!")
     except Exception as e:
+        logger.exception("Error sending email: %s", e)
         messages.error(request, f"Something went wrong while sending the email: {e}")
 
     return redirect(f"{reverse('portfolio_app:success_page')}?name={name}")
-
-
 
 # -----------------------------
 # Success Page
@@ -101,18 +83,12 @@ def success_page(request):
     name = request.GET.get('name', 'User')
     return render(request, "portfolio_app/success.html", {"name": name})
 
-
 # -----------------------------
 # CV Download
 # -----------------------------
 def download_cv(request):
     file_path = os.path.join(
-        settings.BASE_DIR,
-        'portfolio_app',
-        'static',
-        'portfolio_app',
-        'files',
-        'Akila_Resume.pdf'
+        settings.BASE_DIR, 'portfolio_app', 'static', 'portfolio_app', 'files', 'Akila_Resume.pdf'
     )
 
     if not os.path.exists(file_path):
@@ -122,7 +98,7 @@ def download_cv(request):
     try:
         with open(file_path, 'rb') as f:
             response = HttpResponse(f.read(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename="Akila_Resume.pdf"'
+            response['Content-Disposition'] = 'attachment; filename=\"Akila_Resume.pdf\"'
             return response
     except Exception as e:
         logger.exception("Failed to serve CV file: %s", e)

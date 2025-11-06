@@ -12,9 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 # Security
 # -----------------------------
-SECRET_KEY = config 
-DEBUG=True
-ALLOWED_HOSTS=['*']
+SECRET_KEY = 'django-insecure-1234567890replace-this'
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
 # -----------------------------
 # Installed Apps
