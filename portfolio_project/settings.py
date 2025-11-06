@@ -12,9 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 # Security
 # -----------------------------
-SECRET_KEY = config('DJANGO_SECRET_KEY', default='your-secret-key')
-DEBUG = config('DJANGO_DEBUG', cast=bool, default=True)
-ALLOWED_HOSTS = ['*']
+SECRET_KEY = config 
+DEBUG=True
+ALLOWED_HOSTS=['*']
+
 # -----------------------------
 # Installed Apps
 # -----------------------------
@@ -93,15 +94,15 @@ MEDIA_ROOT = BASE_DIR / "media"
 # -----------------------------
 # Email Settings (Gmail)
 # -----------------------------
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+ 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
-EMAIL_USE_SSL = config('EMAIL_USE_SSL', cast=bool, default=False)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'akila271819@gmail.com'
+EMAIL_HOST_PASSWORD = 'ngyj hove cjsc penw'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
 # -----------------------------
 # Messages
