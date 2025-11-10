@@ -92,7 +92,7 @@ def contact_submit(request):
                 subject=f"New message from {name}",
                 message=f"From: {email}\n\n{message}",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=["your_email@example.com"],  # change this to your inbox
+                recipient_list=["akila271819@gmail.com"],  # change this to your inbox
                 fail_silently=False,
             )
             return redirect(f"/success/?name={name}")
